@@ -1,29 +1,40 @@
 <template>
-  <div class="container" @click="clickHandle('test click', $event)">
-
-    <div class="userinfo" @click="bindViewTap">
-      <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
-      <div class="userinfo-nickname">
-        <card :text="userInfo.nickName"></card>
+  <div class="container">
+    <div class="user-panel">
+      <div class="userinfo">
+        <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
+      </div>
+      <div class="user-detial">
+        <div class="user-detial-nickname">
+          <div class="user-detial-name">{{userInfo.nickName}}</div> <div class="user-detial-position">动科 副院长</div>
+        </div>
       </div>
     </div>
 
-    <div class="usermotto">
-      <div class="user-motto">
-        <card :text="motto"></card>
+    <card>
+      <div>本月累计请假</div>
+      <div>
+        <span class="holiday-count">1</span>次
       </div>
-    </div>
+    </card>
 
-    <form class="form-container">
-      <input type="text" class="form-control" v-model="motto" placeholder="v-model" />
-      <input type="text" class="form-control" v-model.lazy="motto" placeholder="v-model.lazy" />
-    </form>
-    <a href="/pages/counter/main" class="counter">去往Vuex示例页面</a>
+    <card>
+      <div>请假</div>
+      <i class="zan-icon zan-icon-clock card-icon"></i>
+    </card>
+
+    <card>
+      <div>销假</div>
+      <i class="zan-icon zan-icon-edit card-icon"></i>
+      
+    </card>
+
   </div>
 </template>
 
 <script>
 import card from '@/components/card'
+import wxp from 'minapp-api-promise'
 
 export default {
   data () {
@@ -42,17 +53,15 @@ export default {
       const url = '../logs/main'
       wx.navigateTo({ url })
     },
-    getUserInfo () {
+    async getUserInfo () {
       // 调用登录接口
-      wx.login({
-        success: () => {
-          wx.getUserInfo({
-            success: (res) => {
-              this.userInfo = res.userInfo
-            }
-          })
-        }
-      })
+      try {
+        await wxp.login()
+        let info = await wxp.getUserInfo()
+        this.userInfo = info.userInfo
+      } catch (err) {
+        console.log(err)
+      }
     },
     clickHandle (msg, ev) {
       console.log('clickHandle:', msg, ev)
@@ -66,7 +75,13 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+.user-panel {
+  width: 100%;
+  display: flex;
+  margin-bottom: 15px;
+}
+
 .userinfo {
   display: flex;
   flex-direction: column;
@@ -74,32 +89,38 @@ export default {
 }
 
 .userinfo-avatar {
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
+  width: 96rpx;
+  height: 96rpx;
+  margin: 5rpx;
   border-radius: 50%;
 }
 
-.userinfo-nickname {
-  color: #aaa;
+.user-detial {
+  flex-flow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
 }
 
-.usermotto {
-  margin-top: 150px;
+.user-detial-nickname {
+  color: #fff;
+  font-size: 14px;
+  
 }
-
-.form-control {
-  display: block;
-  padding: 0 12px;
-  margin-bottom: 5px;
-  border: 1px solid #ccc;
+.user-detial-name {
+  font-size: 16px;
 }
-
-.counter {
-  display: inline-block;
-  margin: 10px auto;
-  padding: 5px 10px;
-  color: blue;
-  border: 1px solid blue;
+.user-detial-position {
+  font-size: 14px;
+  color: #bbb;
+}
+.holiday-count {
+  font-size: 32px;
+  color: #900;
+  box-sizing: border-box;
+  padding: 10px;
+}
+.card-icon {
+  font-size: 20px;
 }
 </style>

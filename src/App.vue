@@ -13,15 +13,18 @@ export default {
 
 <style>
 @import "./assets/style/zanui.wxss";
-
+page {
+  height: 100%;
+}
 .container {
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 200rpx 0;
+  padding: 40rpx;
   box-sizing: border-box;
+  background-color: #600;
+  background-image: linear-gradient(to bottom , #333, #666);
 }
 /* this rule will be remove */
 * {
