@@ -6,6 +6,6 @@ app.$mount()
 
 export default {
   config: {
-    navigationBarTitleText: '查看请假记录'
+    navigationBarTitleText: '新的请假申请'
   }
 }

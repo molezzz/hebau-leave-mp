@@ -12,15 +12,19 @@
     </div>
 
     <card>
-      <div>本月累计请假</div>
-      <div>
-        <span class="holiday-count">1</span>次
-      </div>
+      <a class="card-link" @click="gotoLogs">
+        <div>本月累计请假</div>
+        <div>
+          <span class="holiday-count">1</span>次
+        </div>
+      </a>
     </card>
 
     <card>
-      <div>请假</div>
-      <i class="zan-icon zan-icon-clock card-icon"></i>
+      <a @click="newApplication" class="card-link">
+        <div>请假</div>
+        <i class="zan-icon zan-icon-clock card-icon"></i>
+      </a>
     </card>
 
     <card>
@@ -49,7 +53,7 @@ export default {
   },
 
   methods: {
-    bindViewTap () {
+    gotoLogs () {
       const url = '../logs/main'
       wx.navigateTo({ url })
     },
@@ -65,6 +69,10 @@ export default {
     },
     clickHandle (msg, ev) {
       console.log('clickHandle:', msg, ev)
+    },
+    newApplication () {
+      const url = '../new_application/main'
+      wx.navigateTo({ url })
     }
   },
 
@@ -122,5 +130,8 @@ export default {
 }
 .card-icon {
   font-size: 20px;
+}
+.card {
+  width: 100%;
 }
 </style>
