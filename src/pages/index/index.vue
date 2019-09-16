@@ -32,7 +32,7 @@
       <i class="zan-icon zan-icon-edit card-icon"></i>
       
     </card>
-
+    <van-button type="primary">主要按钮</van-button>
   </div>
 </template>
 

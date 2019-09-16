@@ -30,7 +30,13 @@ module.exports = {
     App: true,
     Page: true,
     wx: true,
+    swan: true,
+    tt: true,
+    my: true,
     getApp: true,
-    getPage: true
+    getPage: true,
+    requirePlugin: true,
+    mpvue: true,
+    mpvuePlatform: true
   }
 }
