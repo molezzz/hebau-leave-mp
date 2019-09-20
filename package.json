@@ -24,6 +24,7 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "dayjs": "^1.8.16",
     "minapp-api-promise": "^1.0.2",
     "mpvue": "^2.0.0",
     "mpvue-zanui": "^1.0.3",

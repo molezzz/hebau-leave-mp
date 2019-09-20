@@ -2,11 +2,11 @@
   <div class="container">
     <div class="user-panel">
       <div class="userinfo">
-        <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
+        <img class="userinfo-avatar" v-if="userInfo.wxAvatarUrl" :src="userInfo.wxAvatarUrl" background-size="cover" />
       </div>
       <div class="user-detial">
-        <div class="user-detial-nickname">
-          <div class="user-detial-name">{{userInfo.nickName}}</div> <div class="user-detial-position">动科 副院长</div>
+        <div class="user-detial-nickname" v-if="userInfo && userInfo.department">
+          <div class="user-detial-name">{{userInfo.realname}}</div> <div class="user-detial-position">{{userInfo.department.name}} {{userInfo.job}}</div>
         </div>
       </div>
     </div>
@@ -32,19 +32,36 @@
       <i class="zan-icon zan-icon-edit card-icon"></i>
       
     </card>
-    <van-button type="primary">主要按钮</van-button>
+    <van-popup
+      :show="showPop"
+      position="bottom"
+      overlay="true"
+      close-on-click-overlay="false"
+      @close="onPopClose"
+    >
+      <van-panel title="登录授权" use-footer-slot>
+        <view class="userinfo-pop-content">
+          您好，使用本系统时需要您微信授权并绑定手机号。
+        </view>
+        <view slot="footer">
+          <van-button @getuserinfo="onPopGetUserInfo" type="primary"  block="true" style="width: 100%" open-type="getUserInfo">授权</van-button>
+        </view>
+      </van-panel>
+    </van-popup>
   </div>
 </template>
 
 <script>
 import card from '@/components/card'
 import wxp from 'minapp-api-promise'
+import { currentUser, login, updateCurrentUser } from '@/utils/index'
 
 export default {
   data () {
     return {
       motto: 'Hello World',
-      userInfo: {}
+      userInfo: {},
+      showPop: false
     }
   },
 
@@ -58,13 +75,25 @@ export default {
       wx.navigateTo({ url })
     },
     async getUserInfo () {
-      // 调用登录接口
+      let user = currentUser()
+
+      if (!user) {
+        user = await login()
+      }
+
+      console.log(user)
+      if (user.error && user.error === 'openid_not_found') {
+        wx.redirectTo({ url: `../bind/main` })
+        return false
+      }
+
       try {
-        await wxp.login()
         let info = await wxp.getUserInfo()
-        this.userInfo = info.userInfo
+        this.setUserInfo(info)
       } catch (err) {
         console.log(err)
+        this.showPop = true
+        return false
       }
     },
     clickHandle (msg, ev) {
@@ -73,10 +102,30 @@ export default {
     newApplication () {
       const url = '../new_application/main'
       wx.navigateTo({ url })
+    },
+    async setUserInfo (info) {
+      // console.log(info)
+      let result = updateCurrentUser({ wxAvatarUrl: info.userInfo.avatarUrl })
+      // console.log(result)
+      if (result) {
+        this.userInfo = result
+      }
+    },
+    onPopClose () {
+      console.log('close pop')
+    },
+    onPopGetUserInfo (evt) {
+      this.showPop = false
+      this.setUserInfo(evt.target)
     }
   },
 
   created () {
+    // 调用应用实例的方法获取全局数据
+    // this.getUserInfo()
+    // console.log('create !!!!!!!!!!!!')
+  },
+  onLoad (options) {
     // 调用应用实例的方法获取全局数据
     this.getUserInfo()
   }
@@ -133,5 +182,8 @@ export default {
 }
 .card {
   width: 100%;
+}
+.userinfo-pop-content  {
+  padding: 20px;
 }
 </style>
