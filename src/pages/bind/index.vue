@@ -45,11 +45,11 @@ export default {
       // console.log(this.code)
       let result = await login(this.code)
       if (result.error) {
-        wx.showToast({
-          title: result.message,
-          icon: 'none',
-          duration: 5000
-        })
+        // wx.showToast({
+        //   title: result.message,
+        //   icon: 'none',
+        //   duration: 2000
+        // })
         return false
       } else {
         // 登陆成功

@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "请假",
+  "usingComponents": {
+    "van-button": "/static/vant/button/index",
+    "van-datetime-picker": "/static/vant/datetime-picker/index",
+    "van-popup": "/static/vant/popup/index",
+    "van-field": "/static/vant/field/index",
+    "van-cell": "/static/vant/cell/index",
+    "van-cell-group": "/static/vant/cell-group/index"
+  }
+}

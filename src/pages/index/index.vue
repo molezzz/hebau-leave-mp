@@ -15,7 +15,7 @@
       <a class="card-link" @click="gotoLogs">
         <div>本月累计请假</div>
         <div>
-          <span class="holiday-count">1</span>次
+          <span class="holiday-count">{{recordCount}}</span>次
         </div>
       </a>
     </card>
@@ -41,7 +41,7 @@
     >
       <van-panel title="登录授权" use-footer-slot>
         <view class="userinfo-pop-content">
-          您好，使用本系统时需要您微信授权并绑定手机号。
+          您好，使用本系统时需要您微信授权。
         </view>
         <view slot="footer">
           <van-button @getuserinfo="onPopGetUserInfo" type="primary"  block="true" style="width: 100%" open-type="getUserInfo">授权</van-button>
@@ -54,14 +54,15 @@
 <script>
 import card from '@/components/card'
 import wxp from 'minapp-api-promise'
-import { currentUser, login, updateCurrentUser } from '@/utils/index'
+import { api, currentUser, login, updateCurrentUser } from '@/utils/index'
 
 export default {
   data () {
     return {
       motto: 'Hello World',
       userInfo: {},
-      showPop: false
+      showPop: false,
+      recordCount: 0
     }
   },
 
@@ -76,7 +77,7 @@ export default {
     },
     async getUserInfo () {
       let user = currentUser()
-
+      // console.log('user  ------> :', user)
       if (!user) {
         user = await login()
       }
@@ -94,6 +95,14 @@ export default {
         console.log(err)
         this.showPop = true
         return false
+      }
+    },
+    async getRecordCount () {
+      let result = await api({
+        url: '/users/record_count'
+      })
+      if (!result.error) {
+        this.recordCount = result.total
       }
     },
     clickHandle (msg, ev) {
@@ -128,6 +137,7 @@ export default {
   onLoad (options) {
     // 调用应用实例的方法获取全局数据
     this.getUserInfo()
+    this.getRecordCount()
   }
 }
 </script>

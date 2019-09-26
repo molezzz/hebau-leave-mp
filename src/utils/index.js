@@ -9,7 +9,7 @@ function formatNumber (n) {
   return str[1] ? str : `0${str}`
 }
 
-export function api (data) {
+export async function api (data) {
   let host = Platform === 'devtools' ? 'https://dev.auhzzb.cn:5000' : 'https://api.auhzzb.cn'
   let user = currentUser()
   if (data.url && !data.url.startsWith('http')) {
@@ -21,7 +21,22 @@ export function api (data) {
     } }, data)
   }
   console.log(data)
-  return wxp.request(data)
+  try {
+    let result = await wxp.request(data)
+    if (result.statusCode === 422) {
+      return { error: 'vaild_error', message: '表单验证错误', data: result.data }
+    }
+    if (result.data && result.data.error) {
+      wx.showToast({
+        title: result.data.message,
+        icon: 'none',
+        duration: 2000
+      })
+    }
+    return result.data
+  } catch (err) {
+    return { error: 'system_error', data: err }
+  }
 }
 
 export function currentUser () {
@@ -62,16 +77,16 @@ export async function login (mobile) {
         }
       }
     })
-    if (!result.data.error) {
-      user = Object.assign({}, result.data, { expiredAt: dayjs().add(90, 'day').unix() })
+    if (!result.error) {
+      user = Object.assign({}, result, { expiredAt: dayjs().add(90, 'day').unix() })
       wx.setStorageSync(CurrentUserKey, user)
       return user
     }
 
-    return result.data
+    return result
   } catch (err) {
     console.error(err)
-    return { error: 'system error', data: err }
+    return { error: 'system_error', data: err }
   }
 }
 
