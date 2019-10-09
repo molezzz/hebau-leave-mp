@@ -1,56 +1,77 @@
 <template>
   <div class="log-list">
     <h1 class="page-title">请假记录</h1>
-    <div class="log-list__item">
+    <div class="log-list__item" v-for="(log, k) in logs" :key="k">
       <i class="log-list__item-circle"></i>
-      <card>
+      <div class="card">
         <div @click="showDetail" class="card-link">
           <div>
-            <div class="log-list__item-date">2018年6月1日</div>
-            <div class="log-list__item-detail">拉肚子</div>
+            <div class="log-list__item-date">{{ log.begin_at}}</div>
+            <div class="log-list__item-detail">{{log.cause}}</div>
           </div>
-          <div> 2 天</div>
+          <div> {{log.duration}} 天</div>
         </div>
-      </card>
+      </div>
     </div>
-    <div class="log-list__item">
-      <i class="log-list__item-circle"></i>
-      <card>
-        <div @click="showDetail" class="card-link">
-          <div>
-            <div class="log-list__item-date">2018年5月30日</div>
-            <div class="log-list__item-detail">去吃麻小</div>
-          </div>
-          <div> 1 天</div>
-        </div>
-      </card>
-    </div>
-
+    <van-button v-if="pageInfo.next_page" style="margin-top: 2rem" :loading="loading" type="primary" block size="small" @click="loadItems">查看更多</van-button>
   </div>
 </template>
 
 <script>
 // import { formatTime } from '@/utils/index'
-import card from '@/components/card'
+import dayjs from 'dayjs'
+import { api, formatTime } from '@/utils/index'
 // import ZanSteps from 'mpvue-zanui/src/components/zan/steps'
 
 export default {
-  components: {
-    card
-  },
-
   data () {
     return {
-      logs: []
+      logs: [],
+      loading: false,
+      pageInfo: {
+        current_page: 1,
+        next_page: 1,
+        pervious_page: null,
+        total_page: 1,
+        perpage: 5
+      }
     }
+  },
+  filters: {
+    formatTime
   },
   methods: {
     showDetail () {
       const url = '../detail/main'
       wx.navigateTo({ url })
+    },
+    duration (item) {
+      return dayjs(item.end_at).diff(dayjs(item.begin_at), 'day')
+    },
+    async loadItems () {
+      if (this.loading || !this.pageInfo.next_page) return
+      this.loading = true
+      let result = await api({
+        method: 'GET',
+        url: '/records.json',
+        data: {
+          page: this.pageInfo.next_page,
+          perpage: this.pageInfo.perpage
+        }
+      })
+      this.loading = false
+      if (!result.items) return
+      result.items.forEach(item => {
+        item.duration = this.duration(item)
+        item.begin_at = formatTime(item.begin_at, 'YYYY年M月D日')
+        this.logs.push(item)
+      })
+      console.log(this.logs)
+      this.pageInfo = Object.assign({}, this.pageInfo, result.page_info)
     }
   },
   created () {
+    this.loadItems()
   }
 }
 </script>

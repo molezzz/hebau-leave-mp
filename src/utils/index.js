@@ -90,19 +90,20 @@ export async function login (mobile) {
   }
 }
 
-export function formatTime (date) {
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
+export function formatTime (date, format = 'YYYY-MM-DD') {
+  // const year = date.getFullYear()
+  // const month = date.getMonth() + 1
+  // const day = date.getDate()
 
-  const hour = date.getHours()
-  const minute = date.getMinutes()
-  const second = date.getSeconds()
+  // const hour = date.getHours()
+  // const minute = date.getMinutes()
+  // const second = date.getSeconds()
 
-  const t1 = [year, month, day].map(formatNumber).join('/')
-  const t2 = [hour, minute, second].map(formatNumber).join(':')
+  // const t1 = [year, month, day].map(formatNumber).join('/')
+  // const t2 = [hour, minute, second].map(formatNumber).join(':')
 
-  return `${t1} ${t2}`
+  // return `${t1} ${t2}`
+  return dayjs(date).format(format)
 }
 
 export default {
