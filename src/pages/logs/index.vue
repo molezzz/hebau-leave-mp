@@ -4,7 +4,7 @@
     <div class="log-list__item" v-for="(log, k) in logs" :key="k">
       <i class="log-list__item-circle"></i>
       <div class="card">
-        <div @click="showDetail" class="card-link">
+        <div @click="showDetail(log)" class="card-link">
           <div>
             <div class="log-list__item-date">{{ log.begin_at}}</div>
             <div class="log-list__item-detail">{{log.cause}}</div>
@@ -41,8 +41,8 @@ export default {
     formatTime
   },
   methods: {
-    showDetail () {
-      const url = '../detail/main'
+    showDetail (log) {
+      const url = '../detail/main?id=' + log.id
       wx.navigateTo({ url })
     },
     duration (item) {
@@ -66,7 +66,7 @@ export default {
         item.begin_at = formatTime(item.begin_at, 'YYYY年M月D日')
         this.logs.push(item)
       })
-      console.log(this.logs)
+      // console.log(this.logs)
       this.pageInfo = Object.assign({}, this.pageInfo, result.page_info)
     }
   },

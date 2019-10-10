@@ -10,10 +10,9 @@ function formatNumber (n) {
 }
 
 export async function api (data) {
-  let host = Platform === 'devtools' ? 'https://dev.auhzzb.cn:5000' : 'https://api.auhzzb.cn'
   let user = currentUser()
   if (data.url && !data.url.startsWith('http')) {
-    data.url = `${host}${data.url}`
+    data.url = apiUrl(data.url)
   }
   if (user) {
     data = Object.assign({}, { header: {
@@ -37,6 +36,11 @@ export async function api (data) {
   } catch (err) {
     return { error: 'system_error', data: err }
   }
+}
+
+export function apiUrl (url) {
+  let host = Platform === 'devtools' ? 'https://dev.auhzzb.cn:5000' : 'https://api.auhzzb.cn'
+  return `${host}${url}`
 }
 
 export function currentUser () {
