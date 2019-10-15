@@ -28,7 +28,7 @@
   </div>
   <div class="steps-title">审批进度</div>
   <div class="card steps-card">
-    <van-steps :steps="steps" active="2" direction="vertical"></van-steps>
+    <van-steps :steps="steps" :active="currentStep" direction="vertical"></van-steps>
     <van-button type="primary" block>审批通过</van-button>
   </div>
 </div>
@@ -36,6 +36,14 @@
 
 <script>
 import { api, apiUrl, formatTime } from '@/utils/index'
+import dayjs from 'dayjs'
+
+// const STATUS_MAP = {
+//   created: '发起申请',
+//   superior: '单位领导通过',
+//   college: '校领导通过',
+//   filing: '组织部备案'
+// }
 
 export default {
   components: {
@@ -43,27 +51,8 @@ export default {
 
   data () {
     return {
-      steps: [
-        {
-          text: '发起申请',
-          desc: '2018-06-01 12:00',
-          done: true
-        },
-        {
-          text: '单位领导通过',
-          desc: '2018-06-01 13:00',
-          done: true
-        },
-        {
-          text: '校级领导通过',
-          desc: '2018-06-01 13:00',
-          done: true
-        },
-        {
-          text: '组织部备案',
-          current: true
-        }
-      ],
+      steps: [],
+      currentStep: 0,
       record: {}
     }
   },
@@ -73,11 +62,47 @@ export default {
         url: `/records/${id}`,
         method: 'GET'
       })
-      // console.log(result)
       if (!result.error) {
+        let logs = {}
+        // 解决组件中状态不更新问题
+        let steps = [
+          {
+            text: '发起申请',
+            desc: '-',
+            key: 'created'
+          },
+          {
+            text: '单位领导通过',
+            key: 'superior',
+            desc: '-'
+          },
+          {
+            text: '校级领导通过',
+            key: 'college',
+            desc: '-'
+          },
+          {
+            text: '组织部备案',
+            key: 'filing',
+            desc: '-'
+          }
+        ]
+        this.currentStep = 0
         this.record = result
         this.record.begin_at = formatTime(this.record.begin_at)
         this.record.end_at = formatTime(this.record.end_at)
+        this.record.logs.forEach((log) => {
+          logs[log.kind] = dayjs(log.created_at).format('YYYY-M-D hh:mm')
+        })
+        for (let i = 0; i < steps.length; i++) {
+          let step = steps[i]
+          if (logs[step.key]) {
+            step.desc = logs[step.key]
+            this.currentStep = i
+          }
+        }
+        steps[0].desc = dayjs(this.record.created_at).format('YYYY-M-D hh:mm')
+        this.steps = steps
       }
     },
     downloadPdf (record) {
