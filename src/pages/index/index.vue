@@ -11,27 +11,28 @@
       </div>
     </div>
 
-    <card>
-      <a class="card-link" @click="gotoLogs">
+    <div class="card">
+      <a class="card-link" @click="gotoLogs('normal')">
         <div>本月累计请假</div>
         <div>
           <span class="holiday-count">{{recordCount}}</span>次
         </div>
       </a>
-    </card>
+    </div>
 
-    <card>
+    <div class="card">
       <a @click="newApplication" class="card-link">
         <div>请假</div>
         <i class="zan-icon zan-icon-clock card-icon"></i>
       </a>
-    </card>
+    </div>
 
-    <card>
-      <div>销假</div>
-      <i class="zan-icon zan-icon-edit card-icon"></i>
-      
-    </card>
+    <div class="card">
+      <a class="card-link" @click="gotoLogs('unback')">
+        <div>销假</div>
+        <i class="zan-icon zan-icon-edit card-icon"></i>
+      </a>
+    </div>
     <van-popup
       :show="showPop"
       position="bottom"
@@ -71,8 +72,9 @@ export default {
   },
 
   methods: {
-    gotoLogs () {
-      const url = '../logs/main'
+    gotoLogs (kind) {
+      let url = '../logs/main'
+      if (kind) url = url + '?kind=' + kind
       wx.navigateTo({ url })
     },
     async getUserInfo () {

@@ -1,6 +1,6 @@
 <template>
   <div class="log-list">
-    <h1 class="page-title">请假记录</h1>
+    <h1 class="page-title">{{kind == 'normal' ? '请假记录' : '待销假'}}</h1>
     <div class="log-list__item" v-for="(log, k) in logs" :key="k">
       <i class="log-list__item-circle"></i>
       <div class="card">
@@ -8,6 +8,10 @@
           <div>
             <div class="log-list__item-date">{{ log.begin_at}}</div>
             <div class="log-list__item-detail">{{log.cause}}</div>
+            <div>
+              <van-tag round type="danger" v-if="!log.back_at">未销假</van-tag>
+              <van-tag plain type="success" v-if="log.status != 'created'">已通过</van-tag>
+            </div>
           </div>
           <div> {{log.duration}} 天</div>
         </div>
@@ -28,13 +32,8 @@ export default {
     return {
       logs: [],
       loading: false,
-      pageInfo: {
-        current_page: 1,
-        next_page: 1,
-        pervious_page: null,
-        total_page: 1,
-        perpage: 5
-      }
+      kind: 'normal',
+      pageInfo: {}
     }
   },
   filters: {
@@ -50,14 +49,19 @@ export default {
     },
     async loadItems () {
       if (this.loading || !this.pageInfo.next_page) return
+      let params = {
+        page: this.pageInfo.next_page,
+        perpage: this.pageInfo.perpage
+      }
+      if (this.kind === 'unback') {
+        params['q[back_at_null]'] = 1
+      }
+      console.log(params)
       this.loading = true
       let result = await api({
         method: 'GET',
         url: '/records.json',
-        data: {
-          page: this.pageInfo.next_page,
-          perpage: this.pageInfo.perpage
-        }
+        data: params
       })
       this.loading = false
       if (!result.items) return
@@ -70,7 +74,21 @@ export default {
       this.pageInfo = Object.assign({}, this.pageInfo, result.page_info)
     }
   },
-  created () {
+  onLoad (options) {
+    console.log('loaded ........', options)
+    if (options.kind) {
+      this.kind = options.kind
+    } else {
+      this.kind = 'normal'
+    }
+    this.pageInfo = {
+      current_page: 1,
+      next_page: 1,
+      pervious_page: null,
+      total_page: 1,
+      perpage: 5
+    }
+    this.logs = []
     this.loadItems()
   }
 }
