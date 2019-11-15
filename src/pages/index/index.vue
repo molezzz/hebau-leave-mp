@@ -33,6 +33,16 @@
         <i class="zan-icon zan-icon-edit card-icon"></i>
       </a>
     </div>
+    <van-panel class="record-panel" v-for="record in unreviewedRecords" :key="record.id" :title="'申请人：' + record.user.realname" status="待批准">
+      <view class="record-panel__cause">
+        <van-cell class="record-panel__cell" :title="'外出地：' + record.address" icon="location-o" />
+        <van-cell :title="record.timeRange" icon="underway-o" />
+        <van-cell :title="record.cause" icon="todo-list-o" />
+      </view>
+      <view>
+        <van-button type="primary" block @click="showDetail(record)">查看</van-button>
+      </view>  
+    </van-panel>
     <van-popup
       :show="showPop"
       position="bottom"
@@ -55,6 +65,7 @@
 <script>
 import card from '@/components/card'
 import wxp from 'minapp-api-promise'
+import dayjs from 'dayjs'
 import { api, currentUser, login, updateCurrentUser } from '@/utils/index'
 
 export default {
@@ -63,7 +74,8 @@ export default {
       motto: 'Hello World',
       userInfo: {},
       showPop: false,
-      recordCount: 0
+      recordCount: 0,
+      unreviewedRecords: []
     }
   },
 
@@ -77,6 +89,10 @@ export default {
       if (kind) url = url + '?kind=' + kind
       wx.navigateTo({ url })
     },
+    showDetail (log) {
+      const url = '../detail/main?id=' + log.id
+      wx.redirectTo({ url })
+    },
     async getUserInfo () {
       let user = currentUser()
       // console.log('user  ------> :', user)
@@ -88,6 +104,11 @@ export default {
       if (user.error && user.error === 'openid_not_found') {
         wx.redirectTo({ url: `../bind/main` })
         return false
+      }
+      // 部门领导检查
+      if (user.department && user.id === user.department.id) {
+        console.log('Get Unreviewed Records ------> ')
+        this.getUnreviewed()
       }
 
       try {
@@ -120,6 +141,21 @@ export default {
       // console.log(result)
       if (result) {
         this.userInfo = result
+      }
+    },
+    // 获取是否有待批准的申请
+    async getUnreviewed () {
+      let result = await api({
+        url: '/records/unreviewed.json',
+        method: 'GET'
+      })
+      console.log(result)
+      result.items.forEach((item) => {
+        let f = 'YYYY-MM-DD'
+        item.timeRange = `${dayjs(item.begin_at).format(f)} 至 ${dayjs(item.end_at).format(f)}`
+      })
+      if (!result.error) {
+        this.unreviewedRecords = result.items
       }
     },
     onPopClose () {
@@ -197,5 +233,15 @@ export default {
 }
 .userinfo-pop-content  {
   padding: 20px;
+}
+.record-panel {
+  width: 100%;
+  margin: 0.5rem auto;
+}
+.record-panel__cause {
+  font-size: 0.6rem;
+}
+.record-panel__cause .van-cell__title {
+  font-size: 14px;
 }
 </style>

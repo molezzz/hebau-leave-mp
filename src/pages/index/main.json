@@ -3,6 +3,7 @@
   "usingComponents": {
     "van-button": "/static/vant/button/index",
     "van-popup": "/static/vant/popup/index",
-    "van-panel": "/static/vant/panel/index"
+    "van-panel": "/static/vant/panel/index",
+    "van-cell": "/static/vant/cell/index"
   }
 }

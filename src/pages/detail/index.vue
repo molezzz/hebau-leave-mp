@@ -23,19 +23,22 @@
         <div class="detail-list__item-label">代管人电话:</div>
         <div class="detail-list__item-content">{{record.agent_mobile}}</div>
       </div>
-      <van-button @click="downloadPdf(record)" plain type="primary" block size="normal" style="margin-top: 1rem">下载 PDF</van-button>
+      <div style="margin-top: 1rem">
+        <van-button @click="back()" type="danger" block size="normal" style="margin: 10px" v-if="canBack">销假</van-button>
+        <van-button @click="downloadPdf(record)" plain type="primary" block size="normal">下载 PDF</van-button>
+      </div>
     </div>
   </div>
   <div class="steps-title">审批进度</div>
   <div class="card steps-card">
     <van-steps :steps="steps" :active="currentStep" direction="vertical"></van-steps>
-    <van-button type="primary" block>审批通过</van-button>
+    <van-button type="primary" block  v-if="canApproval" @click="approval">审批通过</van-button>
   </div>
 </div>
 </template>
 
 <script>
-import { api, apiUrl, formatTime } from '@/utils/index'
+import { api, apiUrl, currentUser, formatTime } from '@/utils/index'
 import dayjs from 'dayjs'
 
 // const STATUS_MAP = {
@@ -54,6 +57,16 @@ export default {
       steps: [],
       currentStep: 0,
       record: {}
+    }
+  },
+  computed: {
+    canBack () {
+      let user = currentUser()
+      return this.record.back_at === null && user && this.record.user && user.id === this.record.user.id
+    },
+    canApproval () {
+      // console.log('检查权限  ----> ', this.record && this.record.status === 'created' && this.isMaster())
+      return this.record && this.record.status === 'created' && this.isMaster()
     }
   },
   methods: {
@@ -105,6 +118,11 @@ export default {
         this.steps = steps
       }
     },
+    isMaster () {
+      let user = currentUser()
+      if (this.record && this.record.user && this.record.user.department && this.record.user.department.master_id === user.id) return true
+      return false
+    },
     downloadPdf (record) {
       let task = wx.downloadFile({
         url: apiUrl(`/records/${record.id}.pdf`),
@@ -123,6 +141,51 @@ export default {
         console.log('已经下载的数据长度', res.totalBytesWritten)
         console.log('预期需要下载的数据总长度', res.totalBytesExpectedToWrite)
       })
+    },
+    async approval () {
+      let result = await api({
+        url: `/records/${this.record.id}/approval.json`,
+        method: 'put'
+      })
+      console.log(result)
+      if (!result.error) {
+        this.loadData(this.record.id)
+        wx.showToast({
+          title: '处理成功',
+          icon: 'success',
+          duration: 3000
+        })
+        // this.record.status = result.status
+      } else {
+        wx.showToast({
+          title: result.message,
+          icon: 'none',
+          duration: 3000
+        })
+      }
+    },
+    async back () {
+      console.log('back')
+      let result = await api({
+        url: `/records/${this.record.id}/back.json`,
+        method: 'put'
+      })
+
+      console.log(result)
+      if (!result.error) {
+        wx.showToast({
+          title: '销假成功',
+          icon: 'success',
+          duration: 3000
+        })
+        this.record.back_at = result.back_at
+      } else {
+        wx.showToast({
+          title: result.message,
+          icon: 'none',
+          duration: 3000
+        })
+      }
     }
   },
   onLoad (options) {
